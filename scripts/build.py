@@ -264,10 +264,10 @@ def load_data():
 
 
 # ---------- desktop (hero) ----------
-def desktop():
+def desktop(data):
     W, H = 1000, 660
     doc = Doc(W, H, f"{NAME} {SURNAME}, full stack developer and visual designer. "
-                    "A desktop with a design file of my name, a terminal and a sticky note.")
+                    "A desktop with a design file of my name, a terminal, a sticky note and widgets.")
     doc.defs += [
         SHADOW,
         f'<radialGradient id="o1" cx="200" cy="560" r="560" gradientUnits="userSpaceOnUse">'
@@ -279,7 +279,7 @@ def desktop():
         '<filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" '
         'numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .5 0"/></filter>',
         '<pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#2A2A34"/></pattern>',
-        f'<linearGradient id="grad" x1="0" x2="1"><stop offset="0" stop-color="{PURPLE}"/><stop offset="1" stop-color="{BLUE}"/></linearGradient>',
+        f'<linearGradient id="spark" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="{BLUE}" stop-opacity=".35"/><stop offset="1" stop-color="{BLUE}" stop-opacity="0"/></linearGradient>',
         '<linearGradient id="note" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#FFE98A"/><stop offset="1" stop-color="#FFD84D"/></linearGradient>',
         f'<clipPath id="screen"><rect width="{W}" height="{H}" rx="16"/></clipPath>',
     ]
@@ -287,8 +287,7 @@ def desktop():
     # --- wallpaper
     doc.add('<g clip-path="url(#screen)">',
             f'<rect width="{W}" height="{H}" fill="{BG0}"/>',
-            f'<rect width="{W}" height="{H}" fill="url(#o1)"/><rect width="{W}" height="{H}" fill="url(#o2)"/>',
-            f'<rect width="{W}" height="{H}" fill="url(#o3)"/>',
+            *(f'<rect class="d{i}" x="-240" y="-240" width="{W + 480}" height="{H + 480}" fill="url(#o{i})"/>' for i in (1, 2, 3)),
             f'<rect width="{W}" height="{H}" filter="url(#grain)" opacity=".07"/>')
 
     # --- menubar
@@ -329,6 +328,22 @@ def desktop():
     .press{{transform-box:fill-box;transform-origin:0 0;animation:press .22s ease-in-out 3.75s}}
     .drop{{transform-box:fill-box;transform-origin:50% 0;animation:drop .8s cubic-bezier(.3,1.4,.4,1) both}}
     .blink{{animation:blink 1.05s steps(1) infinite}}
+    .d1{{animation:d1 26s ease-in-out infinite alternate}}
+    .d2{{animation:d2 31s ease-in-out infinite alternate}}
+    .d3{{animation:d3 23s ease-in-out infinite alternate}}
+    @keyframes d1{{to{{transform:translate(110px,-80px)}}}}
+    @keyframes d2{{to{{transform:translate(-130px,70px)}}}}
+    @keyframes d3{{to{{transform:translate(-90px,-60px)}}}}
+    .wander{{animation:wander 16s ease-in-out 5.2s infinite}}
+    @keyframes wander{{0%,100%{{transform:none}}14%,30%{{transform:translate(-150px,-78px)}}
+      44%,60%{{transform:translate(-270px,70px)}}74%,86%{{transform:translate(-60px,60px)}}}}
+    .float{{animation:float 7s ease-in-out 8s infinite}}
+    @keyframes float{{0%,100%{{transform:none}}35%{{transform:translate(-16px,10px)}}65%{{transform:translate(8px,-6px)}}}}
+    .dot{{animation:dot 1.3s ease-in-out infinite}}
+    @keyframes dot{{0%,60%,100%{{transform:none;opacity:.35}}30%{{transform:translateY(-3px);opacity:1}}}}
+    .ping{{transform-box:fill-box;transform-origin:center;animation:ping 2.2s ease-out infinite}}
+    @keyframes ping{{from{{opacity:.7;transform:scale(1)}}to{{opacity:0;transform:scale(3.2)}}}}
+    .spark{{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.6s cubic-bezier(.65,0,.35,1) 5s both}}
     @keyframes draw{{to{{stroke-dashoffset:0}}}}
     @keyframes fade{{from{{opacity:0}}to{{opacity:1}}}}
     @keyframes out{{to{{opacity:0}}}}
@@ -437,6 +452,15 @@ def desktop():
             doc.t("B8", "C", px_ + 13, py_ + 17.5, 12, "#fff", "middle"),
             f'<rect x="{px_ + 34}" y="{py_}" width="{measure("B5", "ship it.", 13.5) + 22:.0f}" height="26" rx="8" fill="{TB}" stroke="{LINE}"/>',
             doc.t("B5", "ship it.", px_ + 45, py_ + 17.5, 13.5), "</g>")
+    # ...and "you" typing a reply, forever
+    rx_ = px_ + 34 + measure("B5", "ship it.", 13.5) + 22 + 12
+    doc.add(f'<g class="pop" style="{d(7.6)}">',
+            f'<circle cx="{rx_ + 11}" cy="{py_ + 13}" r="11" fill="{BLUE}"/>',
+            doc.t("B8", "Y", rx_ + 11, py_ + 17.5, 12, "#fff", "middle"),
+            f'<rect x="{rx_ + 28}" y="{py_}" width="46" height="26" rx="8" fill="{TB}" stroke="{LINE}"/>')
+    for i in range(3):
+        doc.add(f'<circle class="dot" style="{d(i * .16)}" cx="{rx_ + 40 + i * 11}" cy="{py_ + 13}" r="2.6" fill="{INK}"/>')
+    doc.add("</g>")
     # the multiplayer cursor that "made" the selection
     tx, ty = bx1 + 6, by1 + 8
     doc.css.append(f".cur{{transform:translate(1060px,700px);animation:glide 1s cubic-bezier(.3,.7,.2,1) 2.75s forwards}}"
@@ -457,11 +481,30 @@ def desktop():
     doc.add(f'<path d="M{nx + 18} {ny + 172}q{uw / 2} 7 {uw + 6} -2" fill="none" stroke="#C0392B" stroke-width="2.4" stroke-linecap="round"/>',
             doc.t("C6", "— c.", nx + nw - 22, ny + nh - 16, 24, "#6B5A00", "end"), "</g></g>")
 
-    # --- wallpaper type
-    doc.add(f'<g class="rise" style="{d(4.7)}">', doc.t("B8", "I write the code", 32, 532, 31), "</g>",
-            f'<g class="rise" style="{d(4.85)}">', doc.t("B8", "and I draw the thing", 32, 570, 31), "</g>",
-            f'<g class="rise" style="{d(5.0)}">', doc.t("B8", "it becomes.", 32, 608, 31, "url(#grad)"), "</g>",
-            f'<g class="rise" style="{d(5.3)}">', doc.t("M4", f"{SITE}  ↗", 33, 640, 12, MUTED), "</g>")
+    # --- widgets: a calendar and the last 30 days of contributions, both redrawn daily
+    wy, wh, r = 490, 150, 22
+    doc.add(f'<g class="pop" style="{d(4.6)}">',
+            f'<rect x="24" y="{wy}" width="150" height="{wh}" rx="{r}" fill="#14141B" fill-opacity=".82" stroke="#fff" stroke-opacity=".09"/>',
+            doc.t("B8", NOW.strftime("%A").upper(), 42, wy + 30, 11.5, "#B98CFF"),
+            doc.t("B8", str(NOW.day), 40, wy + 94, 64, INK),
+            doc.t("B5", NOW.strftime("%B"), 42, wy + 118, 14, MUTED),
+            doc.t("M4", "GMT+8", 42, wy + 136, 10.5, DIM), "</g>")
+    days = sorted((dt.date.fromisoformat(k), v) for k, v in data["contrib"].items())
+    last = [v for k, v in days if k <= NOW.date()][-30:]
+    sx0, sx1, sy0, sy1 = 202, 402, wy + 78, wy + 130
+    top = max(max(last), 1)
+    pts = [(sx0 + (sx1 - sx0) * i / (len(last) - 1), sy1 - (sy1 - sy0) * v / top) for i, v in enumerate(last)]
+    line = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in pts)
+    doc.add(f'<g class="pop" style="{d(4.75)}">',
+            f'<rect x="186" y="{wy}" width="234" height="{wh}" rx="{r}" fill="#14141B" fill-opacity=".82" stroke="#fff" stroke-opacity=".09"/>',
+            doc.t("B8", "Contributions", 202, wy + 30, 12.5, INK),
+            doc.t("M4", "30 days", 404, wy + 30, 10.5, DIM, "end"),
+            doc.t("B8", str(sum(last)), 202, wy + 68, 30, INK),
+            f'<path d="{line} L{sx1} {sy1 + 6} L{sx0} {sy1 + 6}Z" fill="url(#spark)"/>',
+            f'<path class="spark" pathLength="1" d="{line}" fill="none" stroke="{BLUE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>',
+            f'<circle class="ping" cx="{pts[-1][0]:.1f}" cy="{pts[-1][1]:.1f}" r="4" fill="{BLUE}"/>',
+            f'<circle cx="{pts[-1][0]:.1f}" cy="{pts[-1][1]:.1f}" r="4" fill="{BLUE}" stroke="#14141B" stroke-width="2"/>',
+            "</g>")
 
     # --- terminal
     tx0, ty0, tw, th, ttb = 436, 372, 540, 272, 34
@@ -511,11 +554,11 @@ def desktop():
         y += lh
 
     # --- cursors on top of everything
-    doc.add(f'<g class="cur"><g class="press">{cursor(doc, USER, PURPLE)}</g></g>')
+    doc.add(f'<g class="cur"><g class="wander"><g class="press">{cursor(doc, USER, PURPLE)}</g></g></g>')
     doc.css.append(".you{transform:translate(1040px,420px);animation:you 1.4s cubic-bezier(.3,.7,.2,1) 6.4s forwards}"
                    "@keyframes you{to{transform:translate(900px,300px)}}"
                    "@media (prefers-reduced-motion:reduce){.you{transform:translate(900px,300px)}}")
-    doc.add(f'<g class="you">{cursor(doc, "you", BLUE)}</g>')
+    doc.add(f'<g class="you"><g class="float">{cursor(doc, "you", BLUE)}</g></g>')
 
     doc.add("</g>",
             f'<rect x=".5" y=".5" width="{W - 1}" height="{H - 1}" rx="16" fill="none" stroke="#fff" stroke-opacity=".1"/>')
@@ -617,7 +660,10 @@ def dock():
             f'<linearGradient id="gsite" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{PURPLE}"/><stop offset="1" stop-color="{BLUE}"/></linearGradient>',
             '<linearGradient id="gmail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"/><stop offset="1" stop-color="#1E6FF0"/></linearGradient>',
             f'<linearGradient id="shelf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A2A34"/><stop offset="1" stop-color="#17171E"/></linearGradient>']
-        doc.css.append(".hop{animation:hop .9s cubic-bezier(.3,1.6,.5,1) both}"
+        doc.css.append(".nudge{animation:nudge 12s ease-in-out 4s infinite}"
+                       "@keyframes nudge{0%,10%,100%{transform:none}2.5%{transform:translateY(-14px)}"
+                       "5%{transform:none}7%{transform:translateY(-6px)}}"
+                       ".hop{animation:hop .9s cubic-bezier(.3,1.6,.5,1) both}"
                        "@keyframes hop{0%{opacity:0;transform:translateY(22px)}100%{opacity:1;transform:none}}" + REDUCED)
         body = [f'<svg x="0" y="0" width="{x1 - x0}" height="{DOCK_H}" viewBox="{x0} 0 {x1 - x0} {DOCK_H}">',
                 f'<rect x="1" y="14" width="{DW - 2}" height="{DOCK_H - 16}" rx="26" fill="url(#shelf)"/>',
@@ -625,7 +671,10 @@ def dock():
                 f'<path d="M26 15.5H{DW - 26}" stroke="#fff" stroke-opacity=".18"/>']
         for j, (k2, l2, _) in enumerate(DOCK):
             cx = DOCK_CAP + j * DOCK_SLOT + DOCK_SLOT / 2
-            body.append(f'<g class="hop" style="{d(.15 + j * .09)}">' + dock_art(doc, k2, cx, 52, 58) + "</g>")
+            art = dock_art(doc, k2, cx, 52, 58)
+            if j == 0:
+                art = f'<g class="nudge">{art}</g>'
+            body.append(f'<g class="hop" style="{d(.15 + j * .09)}">' + art + "</g>")
             body.append(doc.t("B6", l2, cx, 99, 12.5, "#D6D4CF", "middle"))
             if j == 0:
                 body.append(f'<circle cx="{cx}" cy="108" r="2.2" fill="{INK}"/>')
@@ -650,14 +699,46 @@ TOOLS = [
 ]
 
 
+def discrete(attr, events, T, begin):
+    """SMIL loop that jumps between values at the given times, forever"""
+    return (f'<animate attributeName="{attr}" values="{";".join(f"{v:g}" for _, v in events)}" '
+            f'keyTimes="{";".join(f"{t / T:.4f}" for t, _ in events)}" calcMode="discrete" '
+            f'dur="{T}s" begin="{begin}s" repeatCount="indefinite"/>')
+
+
+SEARCHES = ["React", "FastAPI", "Python", "PyTorch", "Figma"]
+
+
 def apps():
     W, tb, side, sec = 1000, 52, 210, 128
     H = tb + 20 + sec * len(TOOLS) + 34
     total = sum(len(t) for _, t in TOOLS)
     doc = Doc(W, H, "Applications: the tools I work with. " +
               ". ".join(f"{c}: {', '.join(n for n, _ in t)}" for c, t in TOOLS))
-    doc.css.append(POP + REDUCED)
+    doc.css.append(POP + REDUCED +
+                   ".bob{animation:bob 44s ease-in-out infinite}"
+                   "@keyframes bob{0%,5%,100%{transform:none}1.3%{transform:translateY(-9px)}"
+                   "2.6%{transform:none}3.6%{transform:translateY(-3px)}}"
+                   ".caret{animation:blink 1.05s steps(1) infinite}@keyframes blink{50%{opacity:0}}"
+                   "@media (prefers-reduced-motion:reduce){.typing{display:none}}")
     doc.add(window(doc, 0, 0, W, H, None, tb, 14, False))
+    # the search box keeps looking things up; each hit lights up in the grid and sidebar
+    SEG, T, BEGIN = 4, 4 * len(SEARCHES), 2.5
+    cats = {label: i for i, (_, tools) in enumerate(TOOLS) for label, _ in tools}
+    hits = []  # (label, typed_at, cleared_at)
+    caret = [(0, 0)]
+    clips = []
+    for i, q in enumerate(SEARCHES):
+        t0, w = i * SEG, []
+        text = q.lower()
+        for k in range(1, len(text) + 1):
+            w.append((t0 + .35 + k * .11, measure("B5", text[:k], 13)))
+        typed = w[-1][0]
+        for k in range(len(text) - 1, -1, -1):
+            w.append((t0 + 3.1 + (len(text) - k) * .04, measure("B5", text[:k], 13)))
+        hits.append((q, typed, t0 + 3.1))
+        clips.append([(0, 0)] + w)
+        caret += w
     # toolbar
     doc.add(f'<path d="M100 20l-6 6 6 6M122 20l6 6-6 6" fill="none" stroke="{MUTED}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
             doc.t("B8", "Applications", 150, 31.5, 15))
@@ -665,7 +746,13 @@ def apps():
     doc.add(f'<rect x="{sx}" y="13" width="190" height="26" rx="7" fill="#fff" fill-opacity=".06" stroke="#fff" stroke-opacity=".06"/>',
             f'<circle cx="{sx + 18}" cy="25" r="5" fill="none" stroke="{MUTED}" stroke-width="1.6"/>'
             f'<path d="M{sx + 22} 29l4 4" stroke="{MUTED}" stroke-width="1.6" stroke-linecap="round"/>',
-            doc.t("B5", "Search tools", sx + 32, 30.5, 13, DIM))
+            '<g class="typing">')
+    for i, q in enumerate(SEARCHES):
+        doc.defs.append(f'<clipPath id="q{i}"><rect x="{sx + 32}" y="14" height="24" width="0">'
+                        f'{discrete("width", clips[i], T, BEGIN)}</rect></clipPath>')
+        doc.add(doc.t("B5", q.lower(), sx + 32, 30.5, 13, INK, extra=f' clip-path="url(#q{i})"'))
+    doc.add(f'<rect class="caret" x="{sx + 33}" y="18" width="1.6" height="15" fill="{BLUE}">'
+            f'{discrete("x", [(t, sx + 33 + v) for t, v in caret], T, BEGIN)}</rect></g>')
     vx = sx - 96
     doc.add(f'<rect x="{vx}" y="13" width="80" height="26" rx="7" fill="#fff" fill-opacity=".06"/>'
             f'<rect x="{vx + 3}" y="16" width="36" height="20" rx="5" fill="#fff" fill-opacity=".12"/>')
@@ -681,7 +768,9 @@ def apps():
     for i, (cat, tools) in enumerate(TOOLS):
         yy = tb + 60 + i * 30
         if i == 0:
-            doc.add(f'<rect x="8" y="{yy - 19}" width="{side - 16}" height="28" rx="7" fill="#fff" fill-opacity=".08"/>')
+            ys = [(0, yy - 19)] + [(k * SEG, tb + 60 + cats[q] * 30 - 19) for k, q in enumerate(SEARCHES)]
+            doc.add(f'<rect x="8" y="{yy - 19}" width="{side - 16}" height="28" rx="7" fill="#fff" fill-opacity=".08">'
+                    f'{discrete("y", ys, T, BEGIN)}</rect>')
         doc.add(f'<rect x="20" y="{yy - 11}" width="14" height="11" rx="2" fill="none" stroke="{BLUE}" stroke-width="1.5"/>'
                 f'<path d="M20 {yy - 8}h14" stroke="{BLUE}" stroke-width="1.5"/>',
                 doc.t("B5", cat, 44, yy, 13.5, INK),
@@ -695,7 +784,7 @@ def apps():
     # grid
     gx0, gx1 = side + 24, W - 24
     col = (gx1 - gx0) / 8
-    n = 0
+    n, pos = 0, {}
     for i, (cat, tools) in enumerate(TOOLS):
         y0 = tb + 20 + i * sec
         tw = measure("B8", cat, 15)
@@ -705,9 +794,17 @@ def apps():
                 f'y1="{y0 + 12}" y2="{y0 + 12}" stroke="{LINE}"/>')
         for j, (label, slug) in enumerate(tools):
             cx = gx0 + col * j + col / 2
-            doc.add(f'<g class="pop" style="{d(.2 + n * .035)}">', tool_tile(doc, cx, y0 + 64, 56, slug),
+            pos[label] = (cx, y0 + 64)
+            # every icon hops once in a while, one at a time, like apps launching
+            hop = 3 + (n * 11 % total) * 44 / total
+            doc.add(f'<g class="pop" style="{d(.2 + n * .035)}"><g class="bob" style="{d(hop)}">',
+                    tool_tile(doc, cx, y0 + 64, 56, slug), "</g>",
                     doc.t("B5", label, cx, y0 + 112, 12.5, "#D6D4CF", "middle"), "</g>")
             n += 1
+    for q, on, off in hits:
+        cx, cy = pos[q]
+        doc.add(f'<rect x="{cx - 34}" y="{cy - 34}" width="68" height="68" rx="19" fill="{BLUE}" fill-opacity=".1" '
+                f'stroke="{BLUE}" stroke-width="2" opacity="0" class="typing">{discrete("opacity", [(0, 0), (on, 1), (off, 0)], T, BEGIN)}</rect>')
     # status bar
     doc.add(f'<line x1="{side + 1}" x2="{W}" y1="{H - 30.5}" y2="{H - 30.5}" stroke="{LINE}"/>',
             doc.t("B5", f"{total} items, still collecting", (side + W) / 2, H - 11, 12, DIM, "middle"))
@@ -759,7 +856,15 @@ def activity(data):
     W, H = 1000, 862
     doc = Doc(W, H, f"Activity monitor: {total} contributions in the last year, "
                     f"busiest on {dt.date(2024, 1, 1 + busiest).strftime('%A')}s, longest streak {longest} days, best day {best} contributions.")
-    doc.css.append(POP + REDUCED)
+    doc.css.append(POP + REDUCED +
+                   ".glint{animation:glint 9s ease-in-out 3s infinite}"
+                   "@keyframes glint{0%{transform:none}40%,100%{transform:translateX(1500px)}}"
+                   ".shim{animation:shim 7s ease-in-out 4s infinite}"
+                   "@keyframes shim{0%{transform:none}35%,100%{transform:translateX(420px)}}"
+                   ".ping{transform-box:fill-box;transform-origin:center;animation:ping 2.2s ease-out infinite}"
+                   "@keyframes ping{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(3)}}")
+    doc.defs.append('<linearGradient id="sheen" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/>'
+                    '<stop offset=".5" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>')
     doc.defs.append('<linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#15141F"/>'
                     f'<stop offset="1" stop-color="{WIN}"/></linearGradient>'
                     f'<radialGradient id="glow" cx="720" cy="220" r="420" gradientUnits="userSpaceOnUse">'
@@ -793,6 +898,7 @@ def activity(data):
     nz = sorted(c for _, c in days if c)
     cuts = [nz[int(len(nz) * q)] for q in (.25, .5, .75)] if nz else [1, 1, 1]
     cells = sorted(grid, key=lambda wd: (wd[1] - wd[0], wd[0]))
+    lit = []  # every bar face, so a light can sweep across the skyline later
     for (w, dd) in cells:
         day, c = grid[(w, dd)]
         A, B, C, D = P(w, dd), P(w + 1, dd), P(w + 1, dd + 1), P(w, dd + 1)
@@ -808,10 +914,26 @@ def activity(data):
                  ([up(A, h), up(B, h), up(C, h), up(D, h)], [A, B, C, D], 1)]
         begin = .3 + w * .022
         for full, flat, f in faces:
+            lit.append(poly(full))
             col = shade(ramp[lvl], f)
             doc.add(f'<path d="{poly(full)}" fill="{col}" stroke="#0B0A12" stroke-opacity=".55" stroke-width=".7" stroke-linejoin="round">'
                     f'<animate attributeName="d" values="{poly(flat)};{poly(full)}" dur=".7s" begin="{begin:.2f}s" '
                     f'calcMode="spline" keySplines=".2 .8 .3 1" fill="freeze"/></path>')
+    # idle: a light sweeps across the bars every few seconds
+    doc.defs.append(f'<clipPath id="lit"><path d="{"".join(lit)}"/></clipPath>')
+    doc.add(f'<g clip-path="url(#lit)"><g class="glint"><rect x="-260" y="{tb}" width="200" height="392" '
+            f'fill="url(#sheen)" transform="skewX(-20)"/></g></g>')
+    # and a beacon on today
+    tw_, td_ = max(grid, key=lambda wd: grid[wd][0])
+    tc = grid[(tw_, td_)][1]
+    th_ = 0 if not tc else 6 + 150 * math.sqrt(tc / peak)
+    corners = [P(tw_, td_), P(tw_ + 1, td_), P(tw_ + 1, td_ + 1), P(tw_, td_ + 1)]
+    bx_ = sum(p[0] for p in corners) / 4
+    by_ = sum(p[1] for p in corners) / 4 - th_
+    doc.add(f'<ellipse class="ping" cx="{bx_:.1f}" cy="{by_:.1f}" rx="7" ry="3.8" fill="none" stroke="{GREEN}" stroke-width="1.5"/>',
+            f'<ellipse cx="{bx_:.1f}" cy="{by_:.1f}" rx="4.5" ry="2.6" fill="{GREEN}"/>',
+            f'<path d="M{bx_:.1f} {by_ - 4:.1f}V{by_ - 26:.1f}" stroke="{GREEN}" stroke-opacity=".6"/>',
+            doc.t("M4", "today", bx_ + 5, by_ - 20, 10.5, GREEN))
     # month labels along the front edge
     ang = math.degrees(math.atan2(WV[1], WV[0]))
     last = None
@@ -864,7 +986,9 @@ def activity(data):
     for i, r in enumerate([r for r in data["repos"] if r["lang"]][:6]):
         y = py0 + 36 + i * 32
         if i == 0:
-            doc.add(f'<rect x="12" y="{y}" width="616" height="30" rx="6" fill="{BLUE}" fill-opacity=".25"/>')
+            doc.add(f'<rect x="12" y="{y}" width="616" height="30" rx="6" fill="{BLUE}" fill-opacity=".25"/>',
+                    f'<circle class="ping" cx="617" cy="{y + 15}" r="3.2" fill="{GREEN}"/>'
+                    f'<circle cx="617" cy="{y + 15}" r="3.2" fill="{GREEN}"/>')
         elif i % 2 == 0:
             doc.add(f'<rect x="12" y="{y}" width="616" height="30" rx="6" fill="#fff" fill-opacity=".02"/>')
         lang = r["lang"] or "—"
@@ -897,7 +1021,7 @@ def activity(data):
         w = (lx1 - lx0) * v / n
         doc.add(f'<rect x="{x:.1f}" y="{py0 + 38}" width="{max(w - 2, 1):.1f}" height="10" fill="{LANG_COLORS.get(lang, DIM)}"/>')
         x += w
-    doc.add("</g>")
+    doc.add(f'<rect class="shim" x="{lx0 - 90}" y="{py0 + 38}" width="80" height="10" fill="url(#sheen)"/>', "</g>")
     for i, (lang, v) in enumerate(top):
         y = py0 + 80 + i * 29
         doc.add(f'<circle cx="{lx0 + 5}" cy="{y - 4.5}" r="4.5" fill="{LANG_COLORS.get(lang, DIM)}"/>',
@@ -927,7 +1051,7 @@ def statusbar():
 
 if __name__ == "__main__":
     data = load_data()
-    out = {"desktop.svg": desktop(), "apps.svg": apps(), "activity.svg": activity(data), "statusbar.svg": statusbar()}
+    out = {"desktop.svg": desktop(data), "apps.svg": apps(), "activity.svg": activity(data), "statusbar.svg": statusbar()}
     for fn, svg, pct in dock():
         out[fn] = svg
         print(f"{fn} width={pct:.1f}%")
