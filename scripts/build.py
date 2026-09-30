@@ -16,7 +16,7 @@ from fontTools.pens.basePen import BasePen
 # ---------- config ----------
 NAME_GLYPHS = "Charles"
 HANDLE = "selrvk"
-SITE = "charleslacantara.com"
+SITE = "charlesalacantara.com"
 EMAIL = "charles.a7cantara@gmail.com"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
 os.makedirs(OUT, exist_ok=True)
