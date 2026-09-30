@@ -1,63 +1,9 @@
-<a href="https://charlesalcantara.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./assets/hero-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./assets/hero-light.svg">
-    <img alt="Charles Alcantara, full stack developer and visual designer" src="./assets/hero-dark.svg" width="100%">
-  </picture>
-</a>
+<a href="https://charlesalcantara.com"><img alt="Charles Alcantara, full stack developer and visual designer. I write the code and I draw the thing it becomes." src="./assets/desktop.svg" width="100%"></a>
 
-<p>
-  <a href="https://charlesalcantara.com"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-site-dark.svg"><img alt="charlesalcantara.com" src="./assets/chip-site-light.svg" height="44"></picture></a>
-  <a href="mailto:charles.a7cantara@gmail.com"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-email-dark.svg"><img alt="charles.a7cantara@gmail.com" src="./assets/chip-email-light.svg" height="44"></picture></a>
-  <a href="https://linkedin.com/in/charles-alcantara"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-linkedin-dark.svg"><img alt="LinkedIn" src="./assets/chip-linkedin-light.svg" height="44"></picture></a>
-  <a href="https://github.com/selrvk"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-github-dark.svg"><img alt="GitHub" src="./assets/chip-github-light.svg" height="44"></picture></a>
-</p>
+<p align="center"><a href="https://charlesalcantara.com"><img alt="Portfolio: charlesalcantara.com" src="./assets/dock-1.svg" width="11.8%"></a><a href="mailto:charles.a7cantara@gmail.com"><img alt="Email: charles.a7cantara@gmail.com" src="./assets/dock-2.svg" width="9.6%"></a><a href="https://linkedin.com/in/charles-alcantara"><img alt="LinkedIn" src="./assets/dock-3.svg" width="9.6%"></a><a href="https://github.com/selrvk?tab=repositories"><img alt="Repositories" src="./assets/dock-4.svg" width="11.8%"></a></p>
 
-<br>
+<img alt="Applications: the tools I work with, from React and Next.js to PyTorch, Figma and Docker" src="./assets/apps.svg" width="100%">
 
-<img alt="Terminal: whoami and what I'm working on now" src="./assets/terminal.svg" width="100%">
+<a href="https://github.com/selrvk?tab=repositories"><img alt="Activity Monitor: a 3D skyline of my contributions over the last year, streaks, recently pushed repos and languages" src="./assets/activity.svg" width="100%"></a>
 
-<br>
-
-### Tools I work with
-
-<table>
-  <tr>
-    <td><b>Frontend</b></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="https://skillicons.dev/icons?i=react,nextjs,ts,angular,vue,svelte,tailwind,bootstrap&theme=dark"><img alt="React, Next.js, TypeScript, Angular, Vue, Svelte, Tailwind, Bootstrap" src="https://skillicons.dev/icons?i=react,nextjs,ts,angular,vue,svelte,tailwind,bootstrap&theme=light" height="44"></picture></td>
-  </tr>
-  <tr>
-    <td><b>Backend</b></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="https://skillicons.dev/icons?i=nodejs,express,fastapi,django,spring,php&theme=dark"><img alt="Node.js, Express, FastAPI, Django, Spring, PHP" src="https://skillicons.dev/icons?i=nodejs,express,fastapi,django,spring,php&theme=light" height="44"></picture></td>
-  </tr>
-  <tr>
-    <td><b>Languages</b></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="https://skillicons.dev/icons?i=js,py,java,kotlin,swift,dart,c,cpp&theme=dark"><img alt="JavaScript, Python, Java, Kotlin, Swift, Dart, C, C++" src="https://skillicons.dev/icons?i=js,py,java,kotlin,swift,dart,c,cpp&theme=light" height="44"></picture></td>
-  </tr>
-  <tr>
-    <td><b>Data and AI</b></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="https://skillicons.dev/icons?i=pytorch,tensorflow,postgres,mongodb,mysql,firebase,sqlite&theme=dark"><img alt="PyTorch, TensorFlow, PostgreSQL, MongoDB, MySQL, Firebase, SQLite" src="https://skillicons.dev/icons?i=pytorch,tensorflow,postgres,mongodb,mysql,firebase,sqlite&theme=light" height="44"></picture></td>
-  </tr>
-  <tr>
-    <td><b>Design and ops</b></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="https://skillicons.dev/icons?i=figma,xd,ps,ai,docker,git,linux,jenkins&theme=dark"><img alt="Figma, Adobe XD, Photoshop, Illustrator, Docker, Git, Linux, Jenkins" src="https://skillicons.dev/icons?i=figma,xd,ps,ai,docker,git,linux,jenkins&theme=light" height="44"></picture></td>
-  </tr>
-</table>
-
-### A year of commits, in 3D
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./profile-3d-contrib/skyline-dark.svg">
-  <img alt="3D contribution skyline with commit, PR and language breakdown" src="./profile-3d-contrib/skyline-light.svg" width="100%">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./dist/snake-dark.svg">
-  <img alt="A snake eating my contribution graph" src="./dist/snake-light.svg" width="100%">
-</picture>
-
-<br>
-
-<sub>Every graphic here is a hand-built SVG in <a href="./assets">/assets</a>, generated by <a href="./scripts/build.py">scripts/build.py</a>. The skyline and snake redraw themselves daily.</sub>
-&nbsp;
-<img alt="profile views" src="https://komarev.com/ghpvc/?username=selrvk&color=9747FF&style=flat-square&label=views" height="16">
+<a href="./scripts/build.py"><img alt="Every graphic on this page is an SVG drawn by scripts/build.py" src="./assets/statusbar.svg" width="100%"></a>
