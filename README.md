@@ -1,4 +1,4 @@
-<a href="https://charlesalacantara.com">
+<a href="https://charlesalcantara.com">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./assets/hero-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="./assets/hero-light.svg">
@@ -7,7 +7,7 @@
 </a>
 
 <p>
-  <a href="https://charlesalacantara.com"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-site-dark.svg"><img alt="charlesalacantara.com" src="./assets/chip-site-light.svg" height="44"></picture></a>
+  <a href="https://charlesalcantara.com"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-site-dark.svg"><img alt="charlesalcantara.com" src="./assets/chip-site-light.svg" height="44"></picture></a>
   <a href="mailto:charles.a7cantara@gmail.com"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-email-dark.svg"><img alt="charles.a7cantara@gmail.com" src="./assets/chip-email-light.svg" height="44"></picture></a>
   <a href="https://linkedin.com/in/charles-alcantara"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-linkedin-dark.svg"><img alt="LinkedIn" src="./assets/chip-linkedin-light.svg" height="44"></picture></a>
   <a href="https://github.com/selrvk"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/chip-github-dark.svg"><img alt="GitHub" src="./assets/chip-github-light.svg" height="44"></picture></a>
