@@ -1,10 +1,12 @@
 """Builds every SVG on the profile README: a fake desktop OS.
 
     desktop.svg    menubar, design window drawing my name, terminal, sticky note
-    dock-*.svg     the nav, sliced so each app icon is its own link
+    dock-*.svg     the nav, one image per icon so each is its own link
+    project-*.svg  App Store cards for my apps, with live details and a screenshot carousel
     apps.svg       Finder-style "Applications" window of the tools I use
     activity.svg   Activity Monitor: 3D contribution skyline, streaks, repos, languages
     statusbar.svg  footer
+Each also has a portrait -m.svg twin that the README swaps in on phones.
 
 Setup (run from this scripts/ folder):
     npm pack @fontsource/bricolage-grotesque@5 @fontsource/jetbrains-mono@5 @fontsource/caveat@5 simple-icons@16
@@ -30,6 +32,12 @@ SURNAME = "Alcantara"
 SITE = "charlesalcantara.com"
 EMAIL = "charles.a7cantara@gmail.com"
 LINKEDIN = "https://linkedin.com/in/charles-alcantara"
+# featured App Store apps: id, the subtitle shown on the store, and an accent taken from the app's own artwork
+PROJECTS = [
+    (6762006490, "NFC Info Writing & Reading", "#22B3A6"),
+    (6762041450, "Daily Routines & Spending", "#F28C28"),
+    (6812686411, "Cozy daily logic puzzles", "#E0A060"),
+]
 TZ = dt.timezone(dt.timedelta(hours=8))
 NOW = dt.datetime.now(TZ)
 
@@ -91,8 +99,8 @@ def measure(key, s, size):
 class Doc:
     """Collects the characters each font draws, so @font-face can be subset to exactly those."""
 
-    def __init__(self, W, H, label):
-        self.W, self.H, self.label = W, H, label
+    def __init__(self, W, H, label, x0=0):
+        self.W, self.H, self.label, self.x0 = W, H, label, x0
         self.used, self.css, self.defs, self.body = {}, [], [], []
 
     def t(self, key, s, x, y, size, fill=INK, anchor=None, cls=None, style=None, extra=""):
@@ -127,7 +135,7 @@ class Doc:
             faces.append(f"@font-face{{font-family:'{key}';src:url(data:font/woff2;base64,"
                          f"{base64.b64encode(buf.getvalue()).decode()}) format('woff2')}}")
         return "\n".join([
-            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.W} {self.H}" width="{self.W}" '
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{self.x0} 0 {self.W} {self.H}" width="{self.W}" '
             f'height="{self.H}" role="img" aria-label="{html.escape(self.label)}">',
             f"<style>{''.join(faces)}{''.join(self.css)}</style>",
             f"<defs>{''.join(self.defs)}</defs>",
@@ -253,9 +261,28 @@ def fetch_repos():
             for r in repos if not r["fork"] and r["name"].lower() != USER.lower()]
 
 
+def fetch_apps():
+    ids = ",".join(str(p[0]) for p in PROJECTS)
+    found = {r["trackId"]: r for r in json.loads(get(f"https://itunes.apple.com/lookup?id={ids}&country=ph"))["results"]}
+
+    def webp(url, size):  # Apple's image CDN resizes and re-encodes on request
+        with urllib.request.urlopen(url.rsplit("/", 1)[0] + f"/{size}.webp", timeout=30) as r:
+            return base64.b64encode(r.read()).decode()
+
+    apps = []
+    for tid, subtitle, accent in PROJECTS:
+        r = found[tid]
+        apps.append(dict(
+            name=re.split(r"\s*[:\-–]\s", r["trackName"])[0], subtitle=subtitle, accent=accent,
+            genre=r["primaryGenreName"], rating=r.get("averageUserRating") or 0, ratings=r.get("userRatingCount") or 0,
+            version=r["version"], updated=r["currentVersionReleaseDate"][:10], released=r["releaseDate"][:10],
+            icon=webp(r["artworkUrl512"], "160x160bb"), shots=[webp(u, "260x0w") for u in r["screenshotUrls"][:4]]))
+    return apps
+
+
 def load_data():
     try:
-        data = dict(contrib=fetch_contributions(), repos=fetch_repos())
+        data = dict(contrib=fetch_contributions(), repos=fetch_repos(), apps=fetch_apps())
         json.dump(data, open(CACHE, "w"))
     except Exception as e:  # offline or rate limited: fall back to the last good fetch
         print("fetch failed, using cache:", e)
@@ -694,7 +721,7 @@ def tool_tile(doc, cx, cy, size, slug):
 # ---------- dock ----------
 DOCK = [("site", "Portfolio", f"https://{SITE}"), ("mail", "Email", f"mailto:{EMAIL}"),
         ("in", "LinkedIn", LINKEDIN), ("gh", "Repos", f"https://github.com/{USER}?tab=repositories")]
-DOCK_SLOT, DOCK_CAP, DOCK_H = 96, 22, 118
+DOCK_SLOT, DOCK_H = 108, 118
 
 
 def dock_art(doc, kind, cx, cy, s):
@@ -718,17 +745,14 @@ def dock_art(doc, kind, cx, cy, s):
 
 
 def dock(mobile=False):
-    """The whole dock is drawn once in shared coordinates; each slice is the same art under a different viewBox,
-    so the pieces line up seamlessly when placed side by side. Slices keep the same widths on phones (the README
-    sets them), so the phone version drops the labels and lets each icon fill its slot instead."""
-    n = len(DOCK)
-    DW = DOCK_CAP * 2 + DOCK_SLOT * n
-    H, shelf, tile, ty, hop = (100, (4, 92), 76, 48, 8) if mobile else (DOCK_H, (14, DOCK_H - 16), 58, 52, 14)
+    """Each dock icon is its own image (so each can be its own link) on its own glass tile. The tiles leave a gap
+    at the image edges: browsers can show hairline seams between adjacent images, so nothing crosses them.
+    Slices keep the same widths on phones (the README sets them), so the phone version drops the labels
+    and lets each icon fill its tile instead."""
+    H, tile, ty, hop = (100, 76, 48, 8) if mobile else (DOCK_H, 58, 50, 14)
     files = []
     for i, (kind, label, _) in enumerate(DOCK):
-        x0 = 0 if i == 0 else DOCK_CAP + i * DOCK_SLOT
-        x1 = DW if i == n - 1 else DOCK_CAP + (i + 1) * DOCK_SLOT
-        doc = Doc(x1 - x0, H, label)
+        doc = Doc(DOCK_SLOT, H, label)
         doc.defs += [
             f'<linearGradient id="gsite" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{PURPLE}"/><stop offset="1" stop-color="{BLUE}"/></linearGradient>',
             '<linearGradient id="gmail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"/><stop offset="1" stop-color="#1E6FF0"/></linearGradient>',
@@ -738,24 +762,116 @@ def dock(mobile=False):
                        f"5%{{transform:none}}7%{{transform:translateY(-{hop / 2:.0f}px)}}}}"
                        ".hop{animation:hop .9s cubic-bezier(.3,1.6,.5,1) both}"
                        "@keyframes hop{0%{opacity:0;transform:translateY(22px)}100%{opacity:1;transform:none}}" + REDUCED)
-        sy, sh = shelf
-        body = [f'<svg x="0" y="0" width="{x1 - x0}" height="{H}" viewBox="{x0} 0 {x1 - x0} {H}">',
-                f'<rect x="1" y="{sy}" width="{DW - 2}" height="{sh}" rx="26" fill="url(#shelf)"/>',
-                f'<rect x="1.5" y="{sy + .5}" width="{DW - 3}" height="{sh - 1}" rx="25.5" fill="none" stroke="#fff" stroke-opacity=".12"/>',
-                f'<path d="M26 {sy + 1.5}H{DW - 26}" stroke="#fff" stroke-opacity=".18"/>']
-        for j, (k2, l2, _) in enumerate(DOCK):
-            cx = DOCK_CAP + j * DOCK_SLOT + DOCK_SLOT / 2
-            art = dock_art(doc, k2, cx, ty, tile)
-            if j == 0:
-                art = f'<g class="nudge">{art}</g>'
-            body.append(f'<g class="hop" style="{d(.15 + j * .09)}">' + art + "</g>")
-            if not mobile:
-                body.append(doc.t("B6", l2, cx, 99, 12.5, "#D6D4CF", "middle"))
-            if j == 0:
-                body.append(f'<circle cx="{cx}" cy="{91 if mobile else 108}" r="{3 if mobile else 2.2}" fill="{INK}"/>')
-        body.append("</svg>")
-        doc.add(*body)
-        files.append((f"dock-{i + 1}{'-m' if mobile else ''}.svg", doc.render(), (x1 - x0) / 10))
+        g, top = 4, (4 if mobile else 12)
+        cx = DOCK_SLOT / 2
+        art = dock_art(doc, kind, cx, ty, tile)
+        if i == 0:
+            art = f'<g class="nudge">{art}</g>'
+        doc.add(f'<rect x="{g}" y="{top}" width="{DOCK_SLOT - 2 * g}" height="{H - top - 2}" rx="20" fill="url(#shelf)"/>',
+                f'<rect x="{g + .5}" y="{top + .5}" width="{DOCK_SLOT - 2 * g - 1}" height="{H - top - 3}" rx="19.5" fill="none" stroke="#fff" stroke-opacity=".12"/>',
+                f'<g class="hop" style="{d(.15 + i * .09)}">{art}</g>')
+        if not mobile:
+            doc.add(doc.t("B6", label, cx, 99, 12.5, "#D6D4CF", "middle"))
+        if i == 0:
+            doc.add(f'<circle cx="{cx}" cy="{93 if mobile else 108}" r="{2.6 if mobile else 2.2}" fill="{INK}"/>')
+        files.append((f"dock-{i + 1}{'-m' if mobile else ''}.svg", doc.render(), DOCK_SLOT / 10))
+    return files
+
+
+# ---------- projects (App Store) ----------
+def stars(x, y, size, rating, color):
+    """five stars, filled up to the rating"""
+    pts = " ".join(f"{math.cos(math.radians(-90 + i * 36)) * (1 if i % 2 == 0 else .45):.3f},"
+                   f"{math.sin(math.radians(-90 + i * 36)) * (1 if i % 2 == 0 else .45):.3f}" for i in range(10))
+    out = []
+    for i in range(5):
+        fill = color if rating >= i + .5 else "#3A3A45"
+        out.append(f'<polygon transform="translate({x + i * size * 1.15 + size / 2:.1f} {y:.1f}) scale({size / 2:.2f})" '
+                   f'points="{pts}" fill="{fill}"/>')
+    return "".join(out)
+
+
+def projects(data, mobile=False):
+    """One App Store card per app, laid side by side as separate images so each can be its own link.
+    Each card sits inside a transparent gutter: browsers can leave hairline gaps between adjacent images,
+    and nothing should be drawn across those edges."""
+    apps = data["apps"]
+    n = len(apps)
+    if mobile:
+        cw, H, g = 134, 388, 4
+        shot_w, gap, shot_y = 100, 10, 120
+    else:
+        cw, H, g = 334, 496, 6
+        shot_w, gap, shot_y = 139, 12, 148
+    shot_h = round(shot_w * 2.165)
+    files = []
+    for i, a in enumerate(apps):
+        doc = Doc(cw, H, f"{a['name']} on the App Store: {a['subtitle']}")
+        step = shot_w + gap
+        doc.css.append(REDUCED +
+                       ".strip{animation:slide 16s cubic-bezier(.65,0,.25,1) infinite}"
+                       f"@keyframes slide{{0%,18%{{transform:none}}25%,43%{{transform:translateX(-{step}px)}}"
+                       f"50%,68%{{transform:translateX(-{2 * step}px)}}75%,93%{{transform:translateX(-{3 * step}px)}}"
+                       f"100%{{transform:translateX(-{4 * step}px)}}}}"
+                       ".fadein{animation:fadein .6s ease-out both}@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}")
+        doc.defs.append('<clipPath id="rr" clipPathUnits="objectBoundingBox"><rect width="1" height="1" rx=".1" ry=".046"/></clipPath>'
+                        f'<image id="ic" width="1" height="1" href="data:image/webp;base64,{a["icon"]}"/>')
+        for k, b64 in enumerate(a["shots"]):
+            doc.defs.append(f'<image id="s{k}" width="{shot_w}" height="{shot_h}" preserveAspectRatio="xMidYMid slice" '
+                            f'clip-path="url(#rr)" href="data:image/webp;base64,{b64}"/>')
+        cx0, cx1 = g, cw - g
+        doc.add(f'<g class="fadein" style="{d(.1 + i * .12)}">',
+                f'<rect x="{cx0}" y=".5" width="{cx1 - cx0}" height="{H - 1}" rx="{12 if mobile else 16}" fill="{WIN}"/>',
+                f'<rect x="{cx0 + .5}" y="1" width="{cx1 - cx0 - 1}" height="{H - 2}" rx="{12 if mobile else 16}" fill="none" stroke="#fff" stroke-opacity=".09"/>')
+        new = (NOW.date() - dt.date.fromisoformat(a["released"])).days <= 60
+
+        def icon(x, y, s):
+            return (f'<clipPath id="icr"><rect x="{x}" y="{y}" width="{s}" height="{s}" rx="{s * .225}"/></clipPath>'
+                    f'<g clip-path="url(#icr)"><use href="#ic" transform="translate({x} {y}) scale({s})"/></g>'
+                    f'<rect x="{x + .5}" y="{y + .5}" width="{s - 1}" height="{s - 1}" rx="{s * .225}" fill="none" stroke="#fff" stroke-opacity=".12"/>')
+
+        if mobile:
+            cx, isz = cw / 2, 54
+            sx = cx - shot_w / 2
+            doc.add(icon(cx - isz / 2, 14, isz),
+                    doc.t("B8", a["name"], cx, 14 + isz + 20, 14.5, INK, "middle"),
+                    doc.t("B5", a["genre"], cx, 14 + isz + 36, 11.5, MUTED, "middle"))
+            by_ = shot_y + shot_h + 12
+            doc.add(f'<rect x="{cx - 32}" y="{by_}" width="64" height="24" rx="12" fill="#fff" fill-opacity=".1"/>',
+                    doc.t("B8", "VIEW", cx, by_ + 16.5, 11, BLUE, "middle"))
+            if new:
+                doc.add(f'<rect x="{cx0 + 7}" y="8" width="34" height="16" rx="5" fill="{a["accent"]}" fill-opacity=".22"/>',
+                        doc.t("B8", "NEW", cx0 + 24, 20, 9.5, a["accent"], "middle"))
+        else:
+            ix, iy, isz = cx0 + 16, 18, 76
+            tx = ix + isz + 14
+            sx = cx0 + 16
+            doc.add(icon(ix, iy, isz),
+                    doc.t("B8", a["name"], tx, iy + 24, 20, INK),
+                    doc.t("B5", a["subtitle"], tx, iy + 45, 13.5, MUTED))
+            gx = tx
+            doc.add(doc.t("B6", a["genre"], gx, iy + 67, 12, "#D6D4CF"))
+            gx += measure("B6", a["genre"], 12) + 10
+            if a["ratings"]:
+                doc.add(stars(gx, iy + 62.5, 9.5, a["rating"], "#FFB340"),
+                        doc.t("M4", f'{a["rating"]:.1f} ({a["ratings"]})', gx + 5 * 9.5 * 1.15 + 5, iy + 67, 11, DIM))
+            by_ = iy + 82
+            doc.add(f'<rect x="{tx}" y="{by_}" width="70" height="26" rx="13" fill="#fff" fill-opacity=".1"/>',
+                    doc.t("B8", "VIEW", tx + 35, by_ + 17.5, 12, BLUE, "middle"))
+            if new:
+                doc.add(f'<rect x="{tx + 80}" y="{by_ + 4}" width="40" height="18" rx="5" fill="{a["accent"]}" fill-opacity=".22"/>',
+                        doc.t("B8", "NEW", tx + 100, by_ + 17, 10.5, a["accent"], "middle"))
+            upd = dt.date.fromisoformat(a["updated"]).strftime("%-d %b")
+            doc.add(doc.t("M4", f'v{a["version"]} · updated {upd}', sx, H - 18, 11, DIM),
+                    doc.t("M4", "iPhone", cx1 - 16, H - 18, 11, DIM, "end"))
+        # screenshot carousel: four shots, then the first ones again, so the slide can loop without a jump
+        vis = 1 if mobile else 2
+        doc.add(f'<clipPath id="win"><rect x="{sx}" y="{shot_y}" width="{vis * shot_w + (vis - 1) * gap}" height="{shot_h}"/></clipPath>',
+                f'<g clip-path="url(#win)"><g class="strip" style="{d(4 + i * 1.6)}">')
+        for k in range(len(a["shots"]) + vis):
+            doc.add(f'<use href="#s{k % len(a["shots"])}" x="{sx + k * step}" y="{shot_y}"/>')
+        doc.add("</g></g></g>")
+        files.append((f"project-{i + 1}{'-m' if mobile else ''}.svg", doc.render(), 100 / n))
     return files
 
 
@@ -1192,7 +1308,7 @@ if __name__ == "__main__":
            "apps.svg": apps(), "apps-m.svg": apps(mobile=True),
            "activity.svg": activity(data), "activity-m.svg": activity(data, mobile=True),
            "statusbar.svg": statusbar(), "statusbar-m.svg": statusbar(mobile=True)}
-    for fn, svg, pct in dock() + dock(mobile=True):
+    for fn, svg, pct in dock() + dock(mobile=True) + projects(data) + projects(data, mobile=True):
         out[fn] = svg
         print(f"{fn} width={pct:.1f}%")
     for fn, svg in out.items():
